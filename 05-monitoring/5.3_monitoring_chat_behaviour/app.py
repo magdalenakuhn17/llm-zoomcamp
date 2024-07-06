@@ -9,7 +9,7 @@ client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 if 'messages' not in st.session_state:
     st.session_state.messages = deque()
 if 'feedback' not in st.session_state:
-    st.session_state.feedback = deque()
+    st.session_state.feedback = {}
 
 # Set up OpenAI API key
 
@@ -29,8 +29,16 @@ def clear_chat():
 st.title("Chat with LLM")
 
 # Display chat history
-for message in st.session_state.messages:
+for idx, message in enumerate(st.session_state.messages):
     st.write(f"**{message['role']}:** {message['content']}")
+    if message['role'] == 'assistant':
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("👍", key=f"thumbs_up_{idx}"):
+                st.session_state.feedback[idx] = 'thumbs_up'
+        with col2:
+            if st.button("👎", key=f"thumbs_down_{idx}"):
+                st.session_state.feedback[idx] = 'thumbs_down'
 
 # Chat input
 user_input = st.text_input("You:", key="input")
@@ -43,15 +51,11 @@ if st.button("Send"):
             {'role': 'assistant', 'content': response})
         st.experimental_rerun()
 
-# Feedback input
-st.write("### Give Feedback")
-feedback_input = st.text_input("Feedback:", key="feedback_input")
-if st.button("Submit Feedback"):
-    if feedback_input:
-        st.session_state.feedback.append(feedback_input)
-        st.write("Feedback submitted!")
-
 # Clear chat button
 if st.button("Clear Chat"):
     clear_chat()
     st.write("Chat cleared!")
+
+# Display feedback (for debugging purposes)
+st.write("### Feedback Data")
+st.write(st.session_state.feedback)
