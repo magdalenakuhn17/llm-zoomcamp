@@ -6,6 +6,7 @@ import psycopg2
 from psycopg2 import sql
 from openai import OpenAI
 from datetime import datetime
+import logging
 
 client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
@@ -31,12 +32,15 @@ def create_metrics_db(postgres_db_params: dict):
         if not exists:
             cursor.execute(
                 sql.SQL(f"CREATE DATABASE {postgres_db_params['dbname']}"))
-            print(
+            logging.error(
                 f"Database {postgres_db_params['dbname']} created successfully!")
+        else:
+            logging.warning(
+                f"Database {postgres_db_params['dbname']} already exists!")
         cursor.close()
         connection.close()
     except Exception as error:
-        print(f"Error creating database: {error}")
+        logging.error(f"Error creating database: {error}")
 
 
 def create_metrics_table(postgres_db_params: dict):
@@ -50,14 +54,18 @@ def create_metrics_table(postgres_db_params: dict):
             session_id VARCHAR,
             message_type VARCHAR,
             content TEXT,
-            feedback VARCHAR
+            feedback VARCHAR,
+            UNIQUE (session_id, message_type, content)
         )
         '''
         cursor.execute(create_table_query)
+        connection.commit()
         cursor.close()
+        logging.warning(
+            f"Table chat_history created!")
         connection.close()
     except Exception as error:
-        print(f"Error creating table: {error}")
+        logging.error(f"Error creating table: {error}")
 
 
 def save_message_to_db(session_id, message_type, content, feedback=None):
@@ -76,7 +84,7 @@ def save_message_to_db(session_id, message_type, content, feedback=None):
         cursor.close()
         connection.close()
     except Exception as error:
-        print(f"Error saving message to database: {error}")
+        logging.error(f"Error saving message to database: {error}")
 
 
 def update_feedback_in_db(session_id, message_type, content, feedback):
@@ -94,7 +102,7 @@ def update_feedback_in_db(session_id, message_type, content, feedback):
         cursor.close()
         connection.close()
     except Exception as error:
-        print(f"Error updating feedback in database: {error}")
+        logging.error(f"Error updating feedback in database: {error}")
 
 
 # Initialize database and table
@@ -157,12 +165,12 @@ if st.button("Send"):
         st.session_state.messages.append(
             {'role': 'assistant', 'content': response})
         save_message_to_db(st.session_state.session_id, 'assistant', response)
-        st.experimental_rerun()
+        st.rerun()
 
 # Clear chat button
 if st.button("Clear Chat"):
     clear_chat()
-    st.experimental_rerun()
+    st.rerun()
 
 # Display feedback (for debugging purposes)
 st.write("### Feedback Data")
