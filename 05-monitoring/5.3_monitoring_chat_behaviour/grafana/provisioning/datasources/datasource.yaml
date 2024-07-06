@@ -4,7 +4,7 @@ datasources:
     type: postgres
     access: proxy
     url: metrics-db:5432
-    database: metrics_db
+    database: chat_monitoring
     user: admin
     secureJsonData:
       password: admin
