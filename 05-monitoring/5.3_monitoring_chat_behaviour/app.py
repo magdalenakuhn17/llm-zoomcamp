@@ -28,6 +28,10 @@ def clear_chat():
 
 st.title("Chat with LLM")
 
+# Display chat history
+for message in st.session_state.messages:
+    st.write(f"**{message['role']}:** {message['content']}")
+
 # Chat input
 user_input = st.text_input("You:", key="input")
 if st.button("Send"):
@@ -37,10 +41,7 @@ if st.button("Send"):
         response = get_response(st.session_state.messages)
         st.session_state.messages.append(
             {'role': 'assistant', 'content': response})
-
-# Display chat history
-for message in st.session_state.messages:
-    st.write(f"**{message['role']}:** {message['content']}")
+        st.experimental_rerun()
 
 # Feedback input
 st.write("### Give Feedback")
