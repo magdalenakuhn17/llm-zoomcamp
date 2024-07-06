@@ -1,11 +1,14 @@
 from collections import deque
 import streamlit as st
 import os
+import uuid
 from openai import OpenAI
 
 client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
 # Initialize session state variables
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 if 'messages' not in st.session_state:
     st.session_state.messages = deque()
 if 'feedback' not in st.session_state:
@@ -22,11 +25,15 @@ def get_response(message):
 
 
 def clear_chat():
+    st.session_state.session_id = str(uuid.uuid4())
     st.session_state.messages.clear()
     st.session_state.feedback.clear()
 
 
 st.title("Chat with LLM")
+
+# Display session ID
+st.write(f"**Session ID:** {st.session_state.session_id}")
 
 # Display chat history
 for idx, message in enumerate(st.session_state.messages):
@@ -54,7 +61,7 @@ if st.button("Send"):
 # Clear chat button
 if st.button("Clear Chat"):
     clear_chat()
-    st.write("Chat cleared!")
+    st.experimental_rerun()
 
 # Display feedback (for debugging purposes)
 st.write("### Feedback Data")
