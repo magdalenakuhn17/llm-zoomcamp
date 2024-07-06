@@ -121,10 +121,11 @@ if 'feedback' not in st.session_state:
 
 
 def get_response(message):
-    response = client.chat.completions.create(model="gpt-3.5-turbo-0125",
-                                              messages=message,
-                                              max_tokens=150)
-    return response.choices[0].message.content.strip()
+    # response = client.chat.completions.create(model="gpt-3.5-turbo-0125",
+    #                                           messages=message,
+    #                                           max_tokens=150)
+    # return response.choices[0].message.content.strip()
+    return 'hello' + str(uuid.uuid4())
 
 
 def clear_chat():
